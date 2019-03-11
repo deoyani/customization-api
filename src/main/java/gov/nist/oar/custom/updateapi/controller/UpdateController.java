@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,10 +52,10 @@ public class UpdateController {
     private UpdateRepository uRepo;
 
     @RequestMapping(value = {
-	    "update/{ediid}" }, method = RequestMethod.GET)
+	    "update/{ediid}" }, method = RequestMethod.POST)
     @ApiOperation(value = ".", nickname = "Cache Record Changes", notes = "Resource returns a record if it is editable and user is authenticated.")
     public void updateRecord(@PathVariable @Valid String ediid,
-	    @ApiIgnore @Valid @RequestParam Map<String, String> params) {
+	    @Valid @RequestBody String params) {
 	uRepo.update(params, ediid);
     }
 

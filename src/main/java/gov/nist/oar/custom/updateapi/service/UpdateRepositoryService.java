@@ -13,8 +13,6 @@
 package gov.nist.oar.custom.updateapi.service;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -22,32 +20,47 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
+import gov.nist.oar.custom.updateapi.config.MongoConfig;
 import gov.nist.oar.custom.updateapi.repositories.ProcessInputRequest;
 import gov.nist.oar.custom.updateapi.repositories.UpdateRepository;
-import gov.nist.oar.custom.updateapi.config.MongoConfig;
 
 /**
  * @author Deoyani Nandrekar-Heinis
  *
  */
 @Service
-public class UpdateRepositoryService implements UpdateRepository{
-    
+public class UpdateRepositoryService implements UpdateRepository {
+
     private Logger logger = LoggerFactory.getLogger(UpdateRepositoryService.class);
     @Autowired
     MongoConfig mconfig;
+
     /*
      * 
      * */
+    // @Override
+    // public boolean update(Map<String, String> params, String recordid) {
+    // ProcessInputRequest req = new ProcessInputRequest();
+    // req.parseInputParams(params);
+    // AccessEditableData accessData = new AccessEditableData();
+    // accessData.checkRecordInCache(recordid);
+    //
+    // return false;
+    // }
     @Override
-    public boolean update(Map<String, String> params, String recordid) {
+    public boolean update(String params, String recordid) {
 	ProcessInputRequest req = new ProcessInputRequest();
-	req.parseInputParams(params);
-	
-	return false;
+	if (req.validateInputParams(params)) {
+	    AccessEditableData accessData = new AccessEditableData(mconfig);
+	    accessData.checkRecordInCache(recordid);
+	    Document update = Document.parse(params);
+	    //DBObject bson = ( DBObject ) JSON.parse( params );
+	    return accessData.updateDataInCache(recordid, update);
+	} else
+	    return false;
     }
 
     /* 
@@ -55,7 +68,7 @@ public class UpdateRepositoryService implements UpdateRepository{
      * */
     @Override
     public Document edit(String recordid) {
-	AccessEditableData accessData = new AccessEditableData();
+	AccessEditableData accessData = new AccessEditableData(mconfig);
 	return accessData.getData(recordid);
     }
 
@@ -64,7 +77,7 @@ public class UpdateRepositoryService implements UpdateRepository{
      *  */
     @Override
     public boolean save(String recordid) {
-	
+
 	return false;
     }
 

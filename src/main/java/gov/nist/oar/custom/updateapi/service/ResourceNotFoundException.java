@@ -13,46 +13,56 @@
 package gov.nist.oar.custom.updateapi.service;
 
 /**
- * @author dsn1
+ * @author Deoyani Nandrekar-Heinis
  *
  */
-public class ResourceNotFoundException extends RuntimeException{
+public class ResourceNotFoundException extends RuntimeException {
     private String requestUrl = "";
+
     /**
      * ResourceNotFoundException for given Id
+     * 
      * @param id
      */
-	public ResourceNotFoundException(int id){
-		super("ResourceNotFoundException with id="+id);
-	}
-	/**
-	 * ResourceNotFoundException 
-	 */
-	public ResourceNotFoundException(){
-		super("Resource you are looking for is not available.");
-	}
-	/***
-	 * ResourceNotFoundException for requestUrl
-	 * @param requestUrl String
-	 */
-	public ResourceNotFoundException(String requestUrl){
-		
-		super("Resource you are looking for is not available.");
-		this.setRequestUrl(requestUrl);
-	}
-	/***
-	 * GetRequestURL
-	 * @return String
-	 */
-	public String getRequestUrl(){
-		return this.requestUrl;
-	}
-	
-	/***
-	 * Set Request URL
-	 * @param url String
-	 */
-	public void setRequestUrl(String url){
-		this.requestUrl = url;
-	}
+    public ResourceNotFoundException(int id) {
+	super("ResourceNotFoundException with id=" + id);
+    }
+
+    /**
+     * ResourceNotFoundException
+     */
+    public ResourceNotFoundException() {
+	super("Resource you are looking for is not available.");
+    }
+
+    /***
+     * ResourceNotFoundException for requestUrl
+     * 
+     * @param requestUrl
+     *            String
+     */
+    public ResourceNotFoundException(String requestUrl) {
+
+	super("Resource you are looking for is not available.");
+	this.setRequestUrl(requestUrl);
+    }
+
+    /***
+     * GetRequestURL
+     * 
+     * @return String
+     */
+    public String getRequestUrl() {
+	return this.requestUrl;
+    }
+
+    /***
+     * Set Request URL
+     * 
+     * @param url
+     *            String
+     */
+    public void setRequestUrl(String url) {
+	this.requestUrl = url;
+    }
 }

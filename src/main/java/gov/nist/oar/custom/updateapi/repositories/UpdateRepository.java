@@ -23,7 +23,8 @@ import org.bson.Document;
  *
  */
 public interface UpdateRepository {
-    public boolean update(Map<String,String> param, String recordid);
+    //public boolean update(Map<String,String> param, String recordid);
+    public boolean update(String param, String recordid);
     public Document edit(String recordid);
     public boolean save(String recordid);
 }

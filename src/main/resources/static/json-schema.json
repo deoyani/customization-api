@@ -23,6 +23,21 @@
                         "prefLabel": "Title",
                         "referenceProperty": "dc:title"
                     }
+                },
+                "description": {
+                    "title": "Description",                    
+                    "description": "Human-readable description (e.g., an abstract) of the resource",
+                    "notes": [
+                        "Each element in the array should be considered a separate paragraph"
+                    ],
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "asOntology": {
+                        "@context": "profile-schema-onto.json",
+                        "prefLabel": "Description",
+                        "referenceProperty": "dc:description"
+                    }
                 }
             }
          }

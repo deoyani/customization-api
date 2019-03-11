@@ -20,64 +20,83 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.UpdateResult;
+import com.mongodb.client.model.UpdateOptions;
+
 import gov.nist.oar.custom.updateapi.config.MongoConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class connects to the cache database to get updated record, if the record does not exist 
- * in the database, contact Mdserver and getdata. 
+ * This class connects to the cache database to get updated record, if the
+ * record does not exist in the database, contact Mdserver and getdata.
+ * 
  * @author Deoyani Nandrekar-Heinis
  *
  */
 public class AccessEditableData {
     private static final Logger log = LoggerFactory.getLogger(AccessEditableData.class);
-    @Autowired
+//    @Autowired
     MongoConfig mconfig;
     MongoCollection<Document> mcollection;
     @Value("${oar.mdserver}")
     private String mdserver;
-    
-    AccessEditableData(){
+
+    AccessEditableData( MongoConfig mconfig) {
+	this.mconfig = mconfig;
 	mcollection = mconfig.getRecordCollection();
     }
-    
+
     /**
      * Check whether record exists in updated database
+     * 
      * @param recordid
      * @return
      */
-    public boolean checkRecordInCache(String recordid){
+    public boolean checkRecordInCache(String recordid) {
 	Pattern p = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE);
 	Matcher m = p.matcher(recordid);
-	if(m.find()) 
-		throw new IllegalArgumentException("check input parameters.");
+	if (m.find())
+	    throw new IllegalArgumentException("check input parameters.");
 
-	long count  = mcollection.count(Filters.eq("ediid",recordid));
-	if(count == 0) 	
+	long count = mcollection.count(Filters.eq("ediid", recordid));
+	if (count == 0)
 	    return false;
 	return true;
     }
-    
+
     /**
      * Get data for give recordid
+     * 
      * @param recordid
      * @return
      */
-    public Document getData(String recordid){
-	if(checkRecordInCache(recordid))
-	    return mcollection.find(Filters.eq("ediid",recordid)).first();
+    public Document getData(String recordid) {
+	if (checkRecordInCache(recordid))
+	    return mcollection.find(Filters.eq("ediid", recordid)).first();
 	else
 	    return this.getDataFromServer(recordid);
     }
-    
+
     /**
      * 
      * @param recordid
      * @return
      */
-    private Document getDataFromServer(String recordid){
+    private Document getDataFromServer(String recordid) {
 	RestTemplate restTemplate = new RestTemplate();
-	return restTemplate.getForObject(mdserver+recordid, Document.class);
+	return restTemplate.getForObject("" + recordid, Document.class);
+    }
+    
+    /**
+     * 
+     * @param recordid
+     * @param update
+     * @return
+     */
+    public boolean updateDataInCache(String recordid, Document update){
+	Document tempUpdateOp = new Document("$set", update);
+	UpdateResult updates = mcollection.updateOne(Filters.eq("ediid", recordid), tempUpdateOp);
+	return updates != null;
     }
 }

@@ -58,9 +58,10 @@ public final class JSONUtils {
 	}
     }
     
-    public boolean validateInput(String jsonRequest){
+    public static boolean validateInput(String jsonRequest){
 	try{
-	    InputStream inputStream = getClass().getResourceAsStream("static/json-schema.json");
+	   
+	    InputStream inputStream =  JSONUtils.class.getClassLoader().getResourceAsStream("static/json-schema.json");
 	    String inputSchema = IOUtils.toString(inputStream);
 	    JSONObject rawSchema = new JSONObject(new JSONTokener(inputSchema));
 	    Schema schema = SchemaLoader.load(rawSchema);

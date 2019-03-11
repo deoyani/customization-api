@@ -40,7 +40,7 @@ import com.mongodb.client.MongoDatabase;
 /**
  * MongoDB configuration, reading all the conf details from 
  * application.yml
- * @author dsn1
+ * @author Deoyani Nandrekar-Heinis
  *
  */
 public class MongoConfig {
@@ -59,8 +59,8 @@ public class MongoConfig {
 	    private String record;
 	 @Value("${oar.mongodb.port}")
 	    private int port;
-	 @Value("${oar.mongodb.host}")
-	    private String host;
+    @Value("${oar.mongodb.host}")
+    private String host;
 	 @Value("${oar.mongodb.database.name}")
 	    private String dbname;
 	 @Value("${oar.mongodb.readwrite.user}")

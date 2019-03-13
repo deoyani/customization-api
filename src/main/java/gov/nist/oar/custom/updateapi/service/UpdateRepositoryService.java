@@ -18,6 +18,7 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.mongodb.DBObject;
@@ -37,6 +38,8 @@ public class UpdateRepositoryService implements UpdateRepository {
     private Logger logger = LoggerFactory.getLogger(UpdateRepositoryService.class);
     @Autowired
     MongoConfig mconfig;
+    @Value("${oar.mdserver}")
+    private String mdserver;
 
     /*
      * 
@@ -54,7 +57,7 @@ public class UpdateRepositoryService implements UpdateRepository {
     public boolean update(String params, String recordid) {
 	ProcessInputRequest req = new ProcessInputRequest();
 	if (req.validateInputParams(params)) {
-	    AccessEditableData accessData = new AccessEditableData(mconfig);
+	    AccessEditableData accessData = new AccessEditableData(mconfig, mdserver);
 	    accessData.checkRecordInCache(recordid);
 	    Document update = Document.parse(params);
 	    //DBObject bson = ( DBObject ) JSON.parse( params );
@@ -68,7 +71,7 @@ public class UpdateRepositoryService implements UpdateRepository {
      * */
     @Override
     public Document edit(String recordid) {
-	AccessEditableData accessData = new AccessEditableData(mconfig);
+	AccessEditableData accessData = new AccessEditableData(mconfig, mdserver);
 	return accessData.getData(recordid);
     }
 
@@ -77,7 +80,8 @@ public class UpdateRepositoryService implements UpdateRepository {
      *  */
     @Override
     public boolean save(String recordid) {
-
+	AccessEditableData accessData = new AccessEditableData(mconfig, mdserver);
+	accessData.getUpdatedData(recordid);
 	return false;
     }
 

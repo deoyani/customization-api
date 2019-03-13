@@ -12,7 +12,6 @@
  */
 package gov.nist.oar.custom.updateapi.config;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,85 +34,88 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 @Configuration
-@ConfigurationProperties	
+@ConfigurationProperties
 @EnableAutoConfiguration
 /**
- * MongoDB configuration, reading all the conf details from 
- * application.yml
+ * MongoDB configuration, reading all the conf details from application.yml
+ * 
  * @author Deoyani Nandrekar-Heinis
  *
  */
 public class MongoConfig {
 
-	 private static Logger log = LoggerFactory.getLogger(MongoConfig.class);
-	 
-//	 @Autowired
-	 MongoClient mongoClient;
-	 
-	 private MongoDatabase mongoDb;
-	 private MongoCollection<Document> recordsCollection;
-	 List servers=new ArrayList();
-	 List credentials=new ArrayList();
+    private static Logger log = LoggerFactory.getLogger(MongoConfig.class);
 
-	 @Value("${dbcollections.records}")
-	    private String record;
-	 @Value("${oar.mongodb.port}")
-	    private int port;
+    // @Autowired
+    MongoClient mongoClient;
+
+    private MongoDatabase mongoDb;
+    private MongoCollection<Document> recordsCollection;
+    List servers = new ArrayList();
+    List credentials = new ArrayList();
+
+    @Value("${dbcollections.records}")
+    private String record;
+    @Value("${oar.mongodb.port}")
+    private int port;
     @Value("${oar.mongodb.host}")
     private String host;
-	 @Value("${oar.mongodb.database.name}")
-	    private String dbname;
-	 @Value("${oar.mongodb.readwrite.user}")
-	    private String user;
-	 @Value("${oar.mongodb.readwrite.password}")
-	    private String password;
-	 
-	 
-	 @PostConstruct
-	 public void initIt() throws Exception {
-		
-		 mongoClient= (MongoClient) this.mongo();
-		 log.info("########## "+ dbname+" ########");
-	
-		 this.setMongodb(this.dbname);
-		 this.setRecordCollection(this.record);
-	
-		 
-	 }
-	 
-	 /**
-	  * Get mongodb database name
-	  * @return
-	  */
-	
-	 public MongoDatabase getMongoDb(){
-		 return mongoDb;
-	 }
-	 /**
-	  * Set mongodb database name
-	  * @param dbname
-	  */
-	 private void setMongodb(String dbname){
-		mongoDb =  mongoClient.getDatabase(dbname);
-	 }
+    @Value("${oar.mongodb.database.name}")
+    private String dbname;
+    @Value("${oar.mongodb.readwrite.user}")
+    private String user;
+    @Value("${oar.mongodb.readwrite.password}")
+    private String password;
 
-	 /***
-	  * Get records collection from Mongodb
-	  * @return
-	  */
-	 public MongoCollection<Document> getRecordCollection(){
-		 return   recordsCollection;
-	 }
-	 /**
-	  * Set records collection 
-	  */
-	 private void setRecordCollection(String record){
-		 recordsCollection = mongoDb.getCollection(record);
-	 }
+    @PostConstruct
+    public void initIt() throws Exception {
 
-	 public Mongo mongo() throws Exception {
-		 servers.add(new ServerAddress(host, port));
-		 credentials.add(MongoCredential.createCredential(user,dbname, password.toCharArray()));
-	     return new MongoClient(servers, credentials);
-	 }
+	mongoClient = (MongoClient) this.mongo();
+	log.info("########## " + dbname + " ########");
+
+	this.setMongodb(this.dbname);
+	this.setRecordCollection(this.record);
+
+    }
+
+    /**
+     * Get mongodb database name
+     * 
+     * @return
+     */
+
+    public MongoDatabase getMongoDb() {
+	return mongoDb;
+    }
+
+    /**
+     * Set mongodb database name
+     * 
+     * @param dbname
+     */
+    private void setMongodb(String dbname) {
+	mongoDb = mongoClient.getDatabase(dbname);
+    }
+
+    /***
+     * Get records collection from Mongodb
+     * 
+     * @return
+     */
+    public MongoCollection<Document> getRecordCollection() {
+	return recordsCollection;
+    }
+
+    /**
+     * Set records collection
+     */
+    private void setRecordCollection(String record) {
+	recordsCollection = mongoDb.getCollection(record);
+    }
+
+    public Mongo mongo() throws Exception {
+	servers.add(new ServerAddress(host, port));
+	credentials.add(MongoCredential.createCredential(user, dbname, password.toCharArray()));
+	return new MongoClient(servers, credentials);
+    }
 }

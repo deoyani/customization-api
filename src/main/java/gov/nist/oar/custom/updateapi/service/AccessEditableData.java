@@ -12,16 +12,26 @@
  */
 package gov.nist.oar.custom.updateapi.service;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
+
+import com.mongodb.Block;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.FullDocument;
 
 import gov.nist.oar.custom.updateapi.config.MongoConfig;
 import org.slf4j.Logger;
@@ -39,12 +49,12 @@ public class AccessEditableData {
 //    @Autowired
     MongoConfig mconfig;
     MongoCollection<Document> mcollection;
-    @Value("${oar.mdserver}")
-    private String mdserver;
+    String mdserver ="";
 
-    AccessEditableData( MongoConfig mconfig) {
+    AccessEditableData( MongoConfig mconfig, String mdserver) {
 	this.mconfig = mconfig;
 	mcollection = mconfig.getRecordCollection();
+mdserver = mdserver;
     }
 
     /**
@@ -78,6 +88,24 @@ public class AccessEditableData {
 	    return this.getDataFromServer(recordid);
     }
 
+    public void getUpdatedData(String recordid){
+	FindIterable<Document> fd = mcollection.find(Filters.eq("ediid", recordid)).projection(Projections.include("ediid","title","description"));
+	Iterator<Document> iterator = fd.iterator();
+	while (iterator.hasNext()) {
+	   Document d = iterator.next();
+	   System.out.println("Document::"+ d);
+	}
+	
+	//Another tests
+	mcollection.watch(Arrays.asList(Aggregates.match(Filters.in("operationType", Arrays.asList("insert", "update", "replace", "delete")))))
+        .fullDocument(FullDocument.UPDATE_LOOKUP).forEach(printBlock);
+    }
+    Block<ChangeStreamDocument<Document>> printBlock = new Block<ChangeStreamDocument<Document>>() {
+	    @Override
+	    public void apply(final ChangeStreamDocument<Document> changeStreamDocument) {
+	        System.out.println(changeStreamDocument);
+	    }
+	};
     /**
      * 
      * @param recordid
@@ -85,7 +113,7 @@ public class AccessEditableData {
      */
     private Document getDataFromServer(String recordid) {
 	RestTemplate restTemplate = new RestTemplate();
-	return restTemplate.getForObject("" + recordid, Document.class);
+	return restTemplate.getForObject(mdserver + recordid, Document.class);
     }
     
     /**

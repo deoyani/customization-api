@@ -51,11 +51,14 @@ public class MongoConfig {
 
     private MongoDatabase mongoDb;
     private MongoCollection<Document> recordsCollection;
+    private MongoCollection<Document> changesCollection;
     List servers = new ArrayList();
     List credentials = new ArrayList();
 
     @Value("${dbcollections.records}")
     private String record;
+    @Value("${dbcollections.changes}")
+    private String changes;
     @Value("${oar.mongodb.port}")
     private int port;
     @Value("${oar.mongodb.host}")
@@ -75,6 +78,7 @@ public class MongoConfig {
 
 	this.setMongodb(this.dbname);
 	this.setRecordCollection(this.record);
+	this.setChangeCollection(this.changes);
 
     }
 
@@ -113,6 +117,27 @@ public class MongoConfig {
 	recordsCollection = mongoDb.getCollection(record);
     }
 
+    /***
+     * Get changes collection from Mongodb
+     * 
+     * @return
+     */
+    public MongoCollection<Document> getChangeCollection() {
+	return changesCollection;
+    }
+
+    /**
+     * Set changes collection
+     */
+    private void setChangeCollection(String change) {
+	changesCollection = mongoDb.getCollection(change);
+    }
+    
+    /**
+     * MongoClient 
+     * @return
+     * @throws Exception
+     */
     public Mongo mongo() throws Exception {
 	servers.add(new ServerAddress(host, port));
 	credentials.add(MongoCredential.createCredential(user, dbname, password.toCharArray()));

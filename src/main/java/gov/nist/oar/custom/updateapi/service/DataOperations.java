@@ -12,30 +12,22 @@
  */
 package gov.nist.oar.custom.updateapi.service;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.ReturnDocument;
-import com.mongodb.client.result.UpdateResult;
-import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
-import com.mongodb.client.model.changestream.FullDocument;
-
-import gov.nist.oar.custom.updateapi.config.MongoConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.mongodb.client.result.UpdateResult;
 
 /**
  * This class connects to the cache database to get updated record, if the
@@ -44,18 +36,8 @@ import org.slf4j.LoggerFactory;
  * @author Deoyani Nandrekar-Heinis
  *
  */
-public class AccessEditableData {
-    private static final Logger log = LoggerFactory.getLogger(AccessEditableData.class);
-//    @Autowired
-    MongoConfig mconfig;
-    MongoCollection<Document> mcollection;
-    String mdserver ="";
-
-    AccessEditableData( MongoConfig mconfig, String mdserver) {
-	this.mconfig = mconfig;
-	mcollection = mconfig.getRecordCollection();
-mdserver = mdserver;
-    }
+public class DataOperations {
+    private static final Logger log = LoggerFactory.getLogger(DataOperations.class);
 
     /**
      * Check whether record exists in updated database
@@ -63,16 +45,18 @@ mdserver = mdserver;
      * @param recordid
      * @return
      */
-    public boolean checkRecordInCache(String recordid) {
+    public boolean checkRecordInCache(String recordid, MongoCollection<Document> mcollection) {
 	Pattern p = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE);
 	Matcher m = p.matcher(recordid);
-	if (m.find())
+	if (m.find()) {
+	    log.error("Input record id is not valid,, check input parameters.");
 	    throw new IllegalArgumentException("check input parameters.");
+	}
 
+	@SuppressWarnings("deprecation")
 	long count = mcollection.count(Filters.eq("ediid", recordid));
-	if (count == 0)
-	    return false;
-	return true;
+	return count != 0;
+
     }
 
     /**
@@ -81,48 +65,88 @@ mdserver = mdserver;
      * @param recordid
      * @return
      */
-    public Document getData(String recordid) {
-	if (checkRecordInCache(recordid))
+    public Document getData(String recordid, MongoCollection<Document> mcollection, String mdserver) {
+	if (checkRecordInCache(recordid, mcollection))
 	    return mcollection.find(Filters.eq("ediid", recordid)).first();
 	else
-	    return this.getDataFromServer(recordid);
+	    return this.getDataFromServer(recordid, mdserver);
     }
 
-    public void getUpdatedData(String recordid){
-	FindIterable<Document> fd = mcollection.find(Filters.eq("ediid", recordid)).projection(Projections.include("ediid","title","description"));
+    public Document getUpdatedData(String recordid, MongoCollection<Document> mcollection) {
+
+	Document changes = new Document();
+	FindIterable<Document> fd = mcollection.find(Filters.eq("ediid", recordid)).projection(Projections.excludeId());
 	Iterator<Document> iterator = fd.iterator();
 	while (iterator.hasNext()) {
-	   Document d = iterator.next();
-	   System.out.println("Document::"+ d);
+	    changes = iterator.next();
 	}
-	
-	//Another tests
-	mcollection.watch(Arrays.asList(Aggregates.match(Filters.in("operationType", Arrays.asList("insert", "update", "replace", "delete")))))
-        .fullDocument(FullDocument.UPDATE_LOOKUP).forEach(printBlock);
+	return changes;
+	// FindIterable<Document> fd = mcollection.find(Filters.eq("ediid",
+	// recordid))
+	// .projection(Projections.include("ediid", "title", "description"));
+	// Iterator<Document> iterator = fd.iterator();
+	// while (iterator.hasNext()) {
+	// Document d = iterator.next();
+	// System.out.println("Document::" + d);
+	// }
+
+	// // Another tests
+	// mcollection
+	// .watch(Arrays.asList(Aggregates
+	// .match(Filters.in("operationType", Arrays.asList("insert", "update",
+	// "replace", "delete")))))
+	// .fullDocument(FullDocument.UPDATE_LOOKUP).forEach(printBlock);
     }
+
     Block<ChangeStreamDocument<Document>> printBlock = new Block<ChangeStreamDocument<Document>>() {
-	    @Override
-	    public void apply(final ChangeStreamDocument<Document> changeStreamDocument) {
-	        System.out.println(changeStreamDocument);
-	    }
-	};
+	@Override
+	public void apply(final ChangeStreamDocument<Document> changeStreamDocument) {
+	    System.out.println(changeStreamDocument);
+	}
+    };
+
     /**
      * 
      * @param recordid
      * @return
      */
-    private Document getDataFromServer(String recordid) {
+    public Document getDataFromServer(String recordid, String mdserver) {
 	RestTemplate restTemplate = new RestTemplate();
 	return restTemplate.getForObject(mdserver + recordid, Document.class);
     }
-    
+
+    /**
+     * This function gets record from mdserver and inserts in the record
+     * collection in MongoDB cache database
+     * 
+     * @param recordid
+     * @param mdserver
+     * @param mcollection
+     */
+    public void putDataInCache(String recordid, String mdserver, MongoCollection<Document> mcollection) {
+	Document doc = getDataFromServer(recordid, mdserver);
+	mcollection.insertOne(doc);
+    }
+
+    /**
+     * This function inserts updated record changes in the Mongodb changes
+     * collection.
+     * 
+     * @param update
+     * @param mcollection
+     */
+    public void putDataInCacheOnlyChanges(Document update, MongoCollection<Document> mcollection) {
+	mcollection.insertOne(update);
+    }
+
     /**
      * 
      * @param recordid
      * @param update
      * @return
      */
-    public boolean updateDataInCache(String recordid, Document update){
+    public boolean updateDataInCache(String recordid, MongoCollection<Document> mcollection, Document update) {
+
 	Document tempUpdateOp = new Document("$set", update);
 	UpdateResult updates = mcollection.updateOne(Filters.eq("ediid", recordid), tempUpdateOp);
 	return updates != null;

@@ -8,11 +8,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 //import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @SpringBootApplication
-public class UpdateapiApplication {
+public class CustomizationApiApplication {
 
     public static void main(String[] args) {
 	System.out.println("MAIN CLASS *******************");
-	SpringApplication.run(UpdateapiApplication.class, args);
+	SpringApplication.run(CustomizationApiApplication.class, args);
     }
 
 //    /**

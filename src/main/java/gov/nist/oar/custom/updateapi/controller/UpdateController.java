@@ -13,11 +13,6 @@
 package gov.nist.oar.custom.updateapi.controller;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -35,27 +30,19 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import gov.nist.oar.custom.updateapi.repositories.UpdateRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
+ * Controller to update 
  * @author  Deoyani Nandrekar-Heinis
  *
  */
@@ -84,18 +71,18 @@ public class UpdateController {
     @RequestMapping(value = {
 	    "save/{ediid}" }, method = RequestMethod.POST)
     @ApiOperation(value = ".", nickname = "Save changes to server", notes = "Resource returns a boolean based on success or failure of the request.")
-    public void saveRecord(@PathVariable @Valid String ediid) throws IOException {
-	uRepo.save(ediid);
-	RestTemplate restTemplate = new RestTemplate();
-	HttpHeaders headers = new HttpHeaders();
-	headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-	MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
-	map.add("email", "first.last@example.com");
-
-	HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
-
-	ResponseEntity<String> response = restTemplate.postForEntity( "", request , String.class );
+    public void saveRecord(@PathVariable @Valid String ediid,  @Valid @RequestBody String params) throws IOException {
+	uRepo.save(ediid, params);
+//	RestTemplate restTemplate = new RestTemplate();
+//	HttpHeaders headers = new HttpHeaders();
+//	headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//
+//	MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+//	map.add("email", "first.last@example.com");
+//
+//	HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+//
+//	ResponseEntity<String> response = restTemplate.postForEntity( "", request , String.class );
 	
 //	HttpClient httpclient = HttpClients.createDefault();
 //	HttpPost httppost = new HttpPost("server");

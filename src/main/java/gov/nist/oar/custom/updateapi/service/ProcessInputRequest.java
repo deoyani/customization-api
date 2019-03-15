@@ -10,18 +10,39 @@
  * that they have been modified.
  * @author: Deoyani Nandrekar-Heinis
  */
-package gov.nist.oar.custom.updateapi.repositories;
+package gov.nist.oar.custom.updateapi.service;
 
-import org.bson.Document;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.nist.oar.custom.updateapi.helpers.JSONUtils;
 
 /**
- * This is repository is defined to get input json for the record in mongodb, 
- * update cache or save final results by passing it to backend service.
  * @author Deoyani Nandrekar-Heinis
  *
  */
-public interface UpdateRepository {
-    public boolean update(String param, String recordid);
-    public Document edit(String recordid);
-    public Document save(String recordid, String params);
+public class ProcessInputRequest {
+    private Logger logger = LoggerFactory.getLogger(ProcessInputRequest.class);
+
+    // Check the input json data and validate
+    public void parseInputParams(Map<String, String> params) {
+
+	logger.info("In parseInputParams");
+    }
+
+    public boolean validateInputParams(String json) {
+	// Add the json schema validation
+	if (JSONUtils.isJSONValid(json))
+	    return JSONUtils.validateInput(json);
+	else
+	    return false;
+    }
+
+    // Validate input json
+    public void validate() {
+	logger.info("validate input json againts given properties");
+    }
+
 }
